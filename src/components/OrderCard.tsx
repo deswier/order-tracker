@@ -1,7 +1,7 @@
 import type { Order } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import { formatPrice } from '@/lib/utils'
-import { ExternalLink, CalendarDays, User } from 'lucide-react'
+import { ExternalLink, CalendarDays, User, Ruler } from 'lucide-react'
 
 interface OrderCardProps {
   order: Order
@@ -29,9 +29,14 @@ export default function OrderCard({ order, onClick }: OrderCardProps) {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2 flex-1">
-              {order.title}
-            </h3>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2">
+                {order.title}
+              </h3>
+              {order.size && (
+                <p className="text-xs text-gray-400 mt-0.5">{order.size}</p>
+              )}
+            </div>
             <div className="flex-shrink-0">
               <StatusBadge status={order.status} />
             </div>

@@ -26,6 +26,7 @@ export default function AddOrderSheet() {
     expected_price: '',
     ozon_url: '',
     image_url: '',
+    size: '',
   })
 
   function set(field: keyof typeof form, value: string) {
@@ -44,9 +45,10 @@ export default function AddOrderSheet() {
         expected_price: price,
         ozon_url: form.ozon_url.trim() || undefined,
         image_url: form.image_url || undefined,
+        size: form.size.trim() || undefined,
         created_by: user.id,
       })
-      setForm({ title: '', expected_price: '', ozon_url: '', image_url: '' })
+      setForm({ title: '', expected_price: '', ozon_url: '', image_url: '', size: '' })
       setOpen(false)
       navigate(`/orders/${id}`)
     } catch (err) {
@@ -109,6 +111,16 @@ export default function AddOrderSheet() {
               value={form.ozon_url}
               onChange={e => set('ozon_url', e.target.value)}
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="a-size">Размер</Label>
+            <Input
+              id="a-size"
+              placeholder="XL, 42, 10kg..."
+              value={form.size}
+              onChange={e => set('size', e.target.value)}
             />
           </div>
 
