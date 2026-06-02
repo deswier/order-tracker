@@ -8,7 +8,7 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   CANCELLED: 'Отменено',
   RECEIVED: 'Получено',
   STALE: 'Устарел',
-  RETURN_NEEDED: 'Нужен возврат',
+  RETURN_NEEDED: 'Оформить возврат',
   RETURN_PENDING: 'Ожидает возврата',
   RETURNED: 'Возвращено',
 }

@@ -6,32 +6,36 @@ import OrderCard from '@/components/OrderCard'
 import AddOrderSheet from '@/components/AddOrderSheet'
 import { Input } from '@/components/ui/input'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
-import { STATUS_COLORS } from '@/lib/statusMachine'
 import type { Order, OrderStatus } from '@/types'
 
-type StatusFilter = 'all' | OrderStatus
 type AccountFilter = 'all' | string
 
-const MAIN_STATUS_OPTIONS: { key: OrderStatus; label: string }[] = [
-  { key: 'NEW',              label: STATUS_LABELS.NEW },
-  { key: 'ORDERED',          label: STATUS_LABELS.ORDERED },
-  { key: 'AWAITING_RECEIPT', label: STATUS_LABELS.AWAITING_RECEIPT },
-  { key: 'CANCEL_PENDING',   label: STATUS_LABELS.CANCEL_PENDING },
-  { key: 'RETURN_NEEDED',    label: STATUS_LABELS.RETURN_NEEDED },
-  { key: 'RETURN_PENDING',   label: STATUS_LABELS.RETURN_PENDING },
-  { key: 'STALE',            label: STATUS_LABELS.STALE },
+// Главные статусы — выбраны по умолчанию, идут первыми в списке
+const MAIN_STATUSES: OrderStatus[] = [
+  'NEW', 'AWAITING_RECEIPT', 'CANCEL_PENDING', 'RETURN_NEEDED', 'RETURN_PENDING',
 ]
 
-const OTHER_STATUS_OPTIONS: { key: StatusFilter; label: string }[] = [
-  { key: 'all',        label: 'Все' },
-  { key: 'RECEIVED',  label: STATUS_LABELS.RECEIVED },
-  { key: 'RETURNED',  label: STATUS_LABELS.RETURNED },
-  { key: 'CANCELLED', label: STATUS_LABELS.CANCELLED },
-]
+const ALL_STATUS_OPTIONS: { key: OrderStatus; label: string }[] = [
+  ...MAIN_STATUSES,
+  'ORDERED', 'STALE', 'RECEIVED', 'RETURNED', 'CANCELLED',
+].map(key => ({ key: key as OrderStatus, label: STATUS_LABELS[key as OrderStatus] }))
 
-function applyFilters(orders: Order[], status: StatusFilter, account: AccountFilter, query: string): Order[] {
+const DEFAULT_STATUS_FILTER = new Set<OrderStatus>(MAIN_STATUSES)
+
+function isDefault(f: Set<OrderStatus> | null) {
+  if (!f) return false
+  if (f.size !== DEFAULT_STATUS_FILTER.size) return false
+  return MAIN_STATUSES.every(s => f.has(s))
+}
+
+function applyFilters(
+  orders: Order[],
+  statusFilter: Set<OrderStatus> | null,
+  account: AccountFilter,
+  query: string,
+): Order[] {
   let result = orders
-  if (status !== 'all') result = result.filter(o => o.status === status)
+  if (statusFilter !== null) result = result.filter(o => statusFilter.has(o.status))
   if (account !== 'all') result = result.filter(o => o.account === account)
   if (query) result = result.filter(o => o.title.toLowerCase().includes(query.toLowerCase()))
   return result
@@ -40,7 +44,11 @@ function applyFilters(orders: Order[], status: StatusFilter, account: AccountFil
 export default function OrdersPage() {
   const navigate = useNavigate()
   const { orders, loading } = useOrders()
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+
+  // null = все статусы; по умолчанию — главные
+  const [statusFilter, setStatusFilter] = useState<Set<OrderStatus> | null>(
+    new Set(DEFAULT_STATUS_FILTER)
+  )
   const [accountFilter, setAccountFilter] = useState<AccountFilter>('all')
   const [search, setSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
@@ -55,10 +63,24 @@ export default function OrdersPage() {
     [orders, statusFilter, accountFilter, search]
   )
 
-  const activeCount = (statusFilter !== 'all' ? 1 : 0) + (accountFilter !== 'all' ? 1 : 0)
+  const statusModified = !isDefault(statusFilter)
+  const activeCount = (statusModified ? 1 : 0) + (accountFilter !== 'all' ? 1 : 0)
+
+  function toggleStatus(status: OrderStatus) {
+    setStatusFilter(prev => {
+      const next = new Set(prev ?? ALL_STATUS_OPTIONS.map(o => o.key))
+      if (next.has(status)) {
+        next.delete(status)
+        return next.size === 0 ? null : next
+      } else {
+        next.add(status)
+        return next
+      }
+    })
+  }
 
   function resetFilters() {
-    setStatusFilter('all')
+    setStatusFilter(new Set(DEFAULT_STATUS_FILTER))
     setAccountFilter('all')
   }
 
@@ -92,15 +114,17 @@ export default function OrdersPage() {
         </button>
       </div>
 
-      {/* Active filter chips */}
+      {/* Active filter chips — только при отклонении от дефолта */}
       {activeCount > 0 && (
         <div className="bg-white border-b border-gray-100 px-4 py-2 flex gap-2 flex-wrap">
-          {statusFilter !== 'all' && (
+          {statusModified && (
             <button
-              onClick={() => setStatusFilter('all')}
+              onClick={() => setStatusFilter(new Set(DEFAULT_STATUS_FILTER))}
               className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium"
             >
-              {STATUS_LABELS[statusFilter as OrderStatus]}
+              {statusFilter === null
+                ? 'Все статусы'
+                : `${statusFilter.size} статус${statusFilter.size === 1 ? '' : statusFilter.size < 5 ? 'а' : 'ов'}`}
               <X className="w-3 h-3" />
             </button>
           )}
@@ -126,7 +150,7 @@ export default function OrdersPage() {
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div className="text-5xl">🛍️</div>
             <div className="text-gray-500 text-center text-sm">
-              {statusFilter === 'all' && accountFilter === 'all' && !search
+              {!statusModified && accountFilter === 'all' && !search
                 ? 'Заказов пока нет.\nНажмите + чтобы добавить.'
                 : 'Нет заказов с выбранными фильтрами.'}
             </div>
@@ -147,10 +171,7 @@ export default function OrdersPage() {
       {/* Filter bottom sheet */}
       {filterOpen && (
         <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40"
-            onClick={() => setFilterOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setFilterOpen(false)} />
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl">
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-gray-300" />
@@ -168,49 +189,41 @@ export default function OrdersPage() {
                 )}
               </div>
 
-              {/* Status */}
-              <div className="flex flex-col gap-3">
+              {/* Статус — плоский список, главные первые */}
+              <div className="flex flex-col gap-2.5">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Статус</p>
-
-                {/* Главные фильтры */}
-                <div className="grid grid-cols-2 gap-2">
-                  {MAIN_STATUS_OPTIONS.map(f => {
-                    const active = statusFilter === f.key
+                <div className="flex flex-wrap gap-2">
+                  {/* Все */}
+                  <button
+                    onClick={() => setStatusFilter(null)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      statusFilter === null
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    Все
+                  </button>
+                  {ALL_STATUS_OPTIONS.map(({ key, label }) => {
+                    const active = statusFilter?.has(key) ?? false
                     return (
                       <button
-                        key={f.key}
-                        onClick={() => setStatusFilter(f.key)}
-                        className={`py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors border-2 ${
+                        key={key}
+                        onClick={() => toggleStatus(key)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                           active
-                            ? 'border-blue-600 bg-blue-600 text-white'
-                            : `border-transparent ${STATUS_COLORS[f.key]}`
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-600'
                         }`}
                       >
-                        {f.label}
+                        {label}
                       </button>
                     )
                   })}
                 </div>
-
-                {/* Остальные — пилюли */}
-                <div className="flex flex-wrap gap-2">
-                  {OTHER_STATUS_OPTIONS.map(f => (
-                    <button
-                      key={f.key}
-                      onClick={() => setStatusFilter(f.key)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                        statusFilter === f.key
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
               </div>
 
-              {/* Account */}
+              {/* Аккаунт */}
               {accounts.length > 0 && (
                 <div className="flex flex-col gap-2.5">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Аккаунт</p>
@@ -218,9 +231,7 @@ export default function OrdersPage() {
                     <button
                       onClick={() => setAccountFilter('all')}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                        accountFilter === 'all'
-                          ? 'bg-gray-700 text-white'
-                          : 'bg-gray-100 text-gray-600'
+                        accountFilter === 'all' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'
                       }`}
                     >
                       Все
@@ -230,9 +241,7 @@ export default function OrdersPage() {
                         key={acc}
                         onClick={() => setAccountFilter(acc)}
                         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                          accountFilter === acc
-                            ? 'bg-gray-700 text-white'
-                            : 'bg-gray-100 text-gray-600'
+                          accountFilter === acc ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'
                         }`}
                       >
                         {acc}
