@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="40" fill="#2563eb"/>
-  <text x="96" y="130" font-size="100" text-anchor="middle" fill="white">🛍️</text>
+  <rect width="192" height="192" rx="42" fill="#2563eb"/>
+  <rect x="48" y="74" width="96" height="82" rx="8" fill="white" opacity="0.95"/>
+  <path d="M72 76 C72 56 82 48 96 48 C110 48 120 56 120 76"
+        stroke="white" stroke-width="9" fill="none" stroke-linecap="round" opacity="0.95"/>
+  <path d="M65 116 L84 135 L127 92"
+        stroke="#2563eb" stroke-width="10" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

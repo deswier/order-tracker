@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="112" fill="#2563eb"/>
+
+  <!-- Shopping bag body -->
+  <rect x="128" y="200" width="256" height="220" rx="20" fill="white" opacity="0.95"/>
+
+  <!-- Bag top cutout / handle area -->
+  <rect x="148" y="196" width="216" height="16" rx="4" fill="#2563eb" opacity="0.2"/>
+
+  <!-- Handle left -->
+  <path d="M192 200 C192 148 220 124 256 124 C292 124 320 148 320 200"
+        stroke="white" stroke-width="22" fill="none" stroke-linecap="round" opacity="0.95"/>
+
+  <!-- Checkmark / tick inside bag (symbolizes tracking) -->
+  <path d="M196 305 L238 347 L318 267"
+        stroke="#2563eb" stroke-width="26" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

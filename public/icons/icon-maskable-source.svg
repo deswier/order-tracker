@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Full-bleed background (no rounded corners — OS clips it) -->
+  <rect width="512" height="512" fill="#2563eb"/>
+
+  <!-- All content within safe zone: ~72% = 184px margin each side, content 148-364 -->
+  <!-- Shopping bag body — shifted into safe zone -->
+  <rect x="152" y="238" width="208" height="178" rx="16" fill="white" opacity="0.95"/>
+
+  <!-- Handle -->
+  <path d="M200 240 C200 196 224 176 256 176 C288 176 312 196 312 240"
+        stroke="white" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.95"/>
+
+  <!-- Checkmark -->
+  <path d="M204 325 L240 361 L308 293"
+        stroke="#2563eb" stroke-width="22" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
