@@ -2,7 +2,7 @@ import type { Order } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import ArticleChip from '@/components/ArticleChip'
 import { formatPrice } from '@/lib/utils'
-import { ExternalLink, CalendarDays, User, ArrowUp, ArrowDown } from 'lucide-react'
+import { ExternalLink, CalendarDays, User, ArrowUp, ArrowDown, Ruler } from 'lucide-react'
 
 interface OrderCardProps {
   order: Order
@@ -47,7 +47,10 @@ export default function OrderCard({ order, onClick }: OrderCardProps) {
                 {order.title}
               </h3>
               {order.size && (
-                <p className="text-xs text-gray-400 mt-0.5">{order.size}</p>
+                <span className="inline-flex items-center gap-1 mt-1 bg-violet-100 text-violet-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                  <Ruler className="w-3 h-3" />
+                  {order.size}
+                </span>
               )}
             </div>
             <div className="flex-shrink-0">

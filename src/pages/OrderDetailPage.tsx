@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice } from '@/lib/utils'
-import { ArrowLeft, ExternalLink, Pencil, Trash2, X } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Pencil, Ruler, Trash2, X } from 'lucide-react'
 import AccountInput from '@/components/AccountInput'
 import ArticleChip from '@/components/ArticleChip'
 import type { Order, OrderStatus } from '@/types'
@@ -367,7 +367,15 @@ export default function OrderDetailPage() {
                 <ArticleChip article={order.article} />
               </div>
             )}
-            {order.size && <ViewRow label="Размер" value={order.size} />}
+            {order.size && (
+              <div className="flex items-center justify-between py-2.5 border-b border-gray-50">
+                <span className="text-sm text-gray-500">Размер</span>
+                <span className="inline-flex items-center gap-1 bg-violet-100 text-violet-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                  <Ruler className="w-3 h-3" />
+                  {order.size}
+                </span>
+              </div>
+            )}
             {isOrdered ? (
               <>
                 <ViewRow label="Фактическая цена" value={order.actual_price != null ? formatPrice(order.actual_price) : null} />
