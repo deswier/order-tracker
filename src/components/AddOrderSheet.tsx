@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Dialog,
@@ -57,26 +57,6 @@ export default function AddOrderSheet() {
       setLoading(false)
     }
   }
-
-  const [fetchingImage, setFetchingImage] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    const url = form.ozon_url.trim()
-    if (!url || form.image_url) return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(async () => {
-      setFetchingImage(true)
-      try {
-        const res = await fetch(`/api/og-image?url=${encodeURIComponent(url)}`)
-        const json = await res.json()
-        if (json.imageUrl) set('image_url', json.imageUrl)
-      } catch { /* тихо игнорируем */ } finally {
-        setFetchingImage(false)
-      }
-    }, 700)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [form.ozon_url])
 
   const canSubmit = !!form.title && !!form.expected_price && !!form.ozon_url.trim() && !loading
 
@@ -145,12 +125,7 @@ export default function AddOrderSheet() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label className="flex items-center gap-2">
-              Фото
-              {fetchingImage && (
-                <span className="text-xs text-gray-400 font-normal">загружаем с Ozon...</span>
-              )}
-            </Label>
+            <Label>Фото</Label>
             <ImageUpload value={form.image_url} onChange={v => set('image_url', v)} />
           </div>
 
