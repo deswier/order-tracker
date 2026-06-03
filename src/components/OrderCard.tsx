@@ -1,7 +1,7 @@
 import type { Order } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import { formatPrice } from '@/lib/utils'
-import { ExternalLink, CalendarDays, User, Ruler } from 'lucide-react'
+import { ExternalLink, CalendarDays, User } from 'lucide-react'
 
 interface OrderCardProps {
   order: Order
