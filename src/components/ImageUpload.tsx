@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Camera, X, Link } from 'lucide-react'
+import { Camera, Image, X, Link } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
 interface ImageUploadProps {
@@ -9,7 +9,8 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ value, onChange }: ImageUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
+  const galleryRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [showUrlInput, setShowUrlInput] = useState(false)
   const [urlValue, setUrlValue] = useState('')
@@ -33,7 +34,8 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       setError('Ошибка загрузки. Создайте бакет order-images в Supabase Storage.')
     } finally {
       setUploading(false)
-      if (inputRef.current) inputRef.current.value = ''
+      if (cameraRef.current) cameraRef.current.value = ''
+      if (galleryRef.current) galleryRef.current.value = ''
     }
   }
 
@@ -59,15 +61,26 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={uploading}
-        className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 active:bg-gray-50 transition-colors disabled:opacity-50"
-      >
-        <Camera className="w-7 h-7" />
-        <span className="text-sm">{uploading ? 'Загружаем...' : 'Выбрать фото'}</span>
-      </button>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => cameraRef.current?.click()}
+          disabled={uploading}
+          className="h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 active:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          <Camera className="w-5 h-5" />
+          <span className="text-xs">{uploading ? 'Загружаем...' : 'Камера'}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => galleryRef.current?.click()}
+          disabled={uploading}
+          className="h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 active:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          <Image className="w-5 h-5" />
+          <span className="text-xs">{uploading ? 'Загружаем...' : 'Галерея'}</span>
+        </button>
+      </div>
 
       {!showUrlInput ? (
         <button
@@ -99,11 +112,20 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
+      {/* Камера */}
       <input
-        ref={inputRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
+        className="hidden"
+        onChange={handleFile}
+      />
+      {/* Галерея — без capture, открывает файловый picker / фотогалерею */}
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
         className="hidden"
         onChange={handleFile}
       />
