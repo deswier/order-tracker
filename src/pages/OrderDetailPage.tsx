@@ -315,9 +315,21 @@ export default function OrderDetailPage() {
         {/* Status + price */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
           <StatusBadge status={order.status} />
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end gap-0.5">
             {order.actual_price != null ? (
-              <div className="text-lg font-bold text-blue-600">{formatPrice(order.actual_price)}</div>
+              <>
+                <div className="text-lg font-bold text-blue-600">{formatPrice(order.actual_price)}</div>
+                {(() => {
+                  const diff = order.expected_price / 2 - order.actual_price
+                  if (diff === 0) return null
+                  const cheaper = diff > 0
+                  return (
+                    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${cheaper ? 'text-green-600' : 'text-yellow-500'}`}>
+                      {cheaper ? '↓' : '↑'}{formatPrice(Math.abs(diff))}
+                    </span>
+                  )
+                })()}
+              </>
             ) : (
               <div className="text-base font-medium text-gray-500">~{formatPrice(order.expected_price)}</div>
             )}

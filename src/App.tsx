@@ -27,9 +27,9 @@ function ProtectedApp() {
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route element={<AppLayout />}>
         <Route index element={<OrdersPage />} />
-        <Route path="orders/:id" element={<OrderDetailPage />} />
         <Route path="balance" element={<BalancePage />} />
       </Route>
+      <Route path="orders/:id" element={<OrderDetailPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </OrdersProvider>

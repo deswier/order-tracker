@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrders } from '@/contexts/OrdersContext'
 import { STATUS_LABELS } from '@/lib/statusMachine'
 import OrderCard from '@/components/OrderCard'
 import AddOrderSheet from '@/components/AddOrderSheet'
 import { Input } from '@/components/ui/input'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, SlidersHorizontal, X, RefreshCw } from 'lucide-react'
 import type { Order, OrderStatus } from '@/types'
 
 type AccountFilter = 'all' | string
@@ -54,6 +54,33 @@ export default function OrdersPage() {
   const [filterOpen, setFilterOpen] = useState(false)
 
   useEffect(() => { void refetch() }, [])
+
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const touchStartY = useRef(0)
+  const [pullY, setPullY] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  const THRESHOLD = 65
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    if (!scrollRef.current || scrollRef.current.scrollTop > 0) return
+    const delta = e.touches[0].clientY - touchStartY.current
+    if (delta > 0) setPullY(Math.min(delta * 0.5, THRESHOLD + 10))
+  }
+
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD) {
+      setRefreshing(true)
+      setPullY(0)
+      await refetch()
+      setRefreshing(false)
+    } else {
+      setPullY(0)
+    }
+  }
 
   const accounts = useMemo(() => {
     const set = new Set(orders.map(o => o.account).filter(Boolean) as string[])
@@ -143,7 +170,24 @@ export default function OrdersPage() {
       )}
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+      {/* Pull-to-refresh индикатор */}
+      <div
+        className="overflow-hidden transition-all duration-200 flex items-center justify-center bg-white"
+        style={{ height: refreshing ? 48 : pullY > 0 ? pullY : 0 }}
+      >
+        <RefreshCw
+          className={`w-5 h-5 text-blue-500 transition-transform ${refreshing ? 'animate-spin' : ''}`}
+          style={{ transform: `rotate(${(pullY / THRESHOLD) * 180}deg)` }}
+        />
+      </div>
+
+      <div
+        ref={scrollRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 pb-[calc(5rem+env(safe-area-inset-bottom))]"
+      >
         {loading ? (
           <div className="flex-1 flex items-center justify-center py-20">
             <div className="text-gray-400">Загрузка...</div>

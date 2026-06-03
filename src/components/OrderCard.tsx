@@ -1,11 +1,23 @@
 import type { Order } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import { formatPrice } from '@/lib/utils'
-import { ExternalLink, CalendarDays, User } from 'lucide-react'
+import { ExternalLink, CalendarDays, User, ArrowUp, ArrowDown } from 'lucide-react'
 
 interface OrderCardProps {
   order: Order
   onClick: () => void
+}
+
+function PriceDiff({ expected, actual }: { expected: number; actual: number }) {
+  const diff = expected / 2 - actual
+  if (diff === 0) return null
+  const cheaper = diff > 0
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${cheaper ? 'text-green-600' : 'text-yellow-500'}`}>
+      {cheaper ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
+      {formatPrice(Math.abs(diff))}
+    </span>
+  )
 }
 
 function formatDate(dateStr: string) {
@@ -44,7 +56,10 @@ export default function OrderCard({ order, onClick }: OrderCardProps) {
 
           <div className="mt-2 flex items-center gap-3 flex-wrap">
             {order.actual_price != null ? (
-              <span className="text-sm font-semibold text-blue-600">{formatPrice(order.actual_price)}</span>
+              <>
+                <span className="text-sm font-semibold text-blue-600">{formatPrice(order.actual_price)}</span>
+                <PriceDiff expected={order.expected_price} actual={order.actual_price} />
+              </>
             ) : (
               <div>
                 <span className="text-sm text-gray-500">~</span>
