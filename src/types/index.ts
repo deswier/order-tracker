@@ -31,6 +31,7 @@ export interface Order {
   account: string | null
   delivery_date: string | null
   size: string | null
+  article: string | null
   is_settled: boolean
   created_by: string
   created_at: string

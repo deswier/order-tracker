@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch'
 import { formatPrice } from '@/lib/utils'
 import { ArrowLeft, ExternalLink, Pencil, Trash2, X } from 'lucide-react'
 import AccountInput from '@/components/AccountInput'
+import ArticleChip from '@/components/ArticleChip'
 import type { Order, OrderStatus } from '@/types'
 
 type TField = 'actual_price' | 'account' | 'delivery_date' | 'return_number'
@@ -64,6 +65,7 @@ export default function OrderDetailPage() {
 
   const [form, setForm] = useState({
     title: '',
+    article: '',
     ozon_url: '',
     image_url: '',
     expected_price: '',
@@ -90,6 +92,7 @@ export default function OrderDetailPage() {
       delivery_date: o.delivery_date ?? '',
       return_number: o.return_number ?? '',
       size: o.size ?? '',
+      article: o.article ?? '',
     }
   }
 
@@ -194,6 +197,7 @@ export default function OrderDetailPage() {
       delivery_date: form.delivery_date || null,
       return_number: form.return_number.trim() || null,
       size: form.size.trim() || null,
+      article: form.article.trim() || null,
     }
     if (!isOrdered) {
       updates.expected_price = parseFloat(form.expected_price) || order.expected_price
@@ -357,6 +361,12 @@ export default function OrderDetailPage() {
         {/* Данные заказа — просмотр */}
         {!editing && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
+            {order.article && (
+              <div className="flex items-center justify-between py-2.5 border-b border-gray-50">
+                <span className="text-sm text-gray-500">Артикул</span>
+                <ArticleChip article={order.article} />
+              </div>
+            )}
             {order.size && <ViewRow label="Размер" value={order.size} />}
             {isOrdered ? (
               <>
@@ -400,6 +410,18 @@ export default function OrderDetailPage() {
                 value={form.title}
                 onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                 className={formErrors.has('title') ? 'border-red-400 focus-visible:ring-red-400' : ''}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="d-article">Артикул</Label>
+              <Input
+                id="d-article"
+                placeholder="1234567890"
+                value={form.article}
+                onChange={e => setForm(p => ({ ...p, article: e.target.value }))}
+                inputMode="numeric"
+                className="font-mono"
               />
             </div>
 

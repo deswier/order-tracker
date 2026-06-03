@@ -1,5 +1,6 @@
 import type { Order } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
+import ArticleChip from '@/components/ArticleChip'
 import { formatPrice } from '@/lib/utils'
 import { ExternalLink, CalendarDays, User, ArrowUp, ArrowDown } from 'lucide-react'
 
@@ -81,19 +82,25 @@ export default function OrderCard({ order, onClick }: OrderCardProps) {
                 {formatDate(order.delivery_date)}
               </span>
             )}
-            {order.ozon_url && (
-              <a
-                href={order.ozon_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-600"
-                onClick={e => e.stopPropagation()}
-              >
-                <ExternalLink className="w-3 h-3" />
-                Ozon
-              </a>
-            )}
           </div>
+
+          {(order.article || order.ozon_url) && (
+            <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+              {order.article && <ArticleChip article={order.article} />}
+              {order.ozon_url && (
+                <a
+                  href={order.ozon_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-600"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Ozon
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

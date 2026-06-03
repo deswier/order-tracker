@@ -9,6 +9,7 @@ interface OrdersContextValue {
   refetch: () => Promise<void>
   createOrder: (data: {
     title: string
+    article?: string
     expected_price: number
     ozon_url?: string
     image_url?: string
@@ -87,6 +88,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
 
   async function createOrder(data: {
     title: string
+    article?: string
     expected_price: number
     ozon_url?: string
     image_url?: string

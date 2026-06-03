@@ -23,6 +23,7 @@ export default function AddOrderSheet() {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     title: '',
+    article: '',
     expected_price: '',
     ozon_url: '',
     image_url: '',
@@ -42,13 +43,14 @@ export default function AddOrderSheet() {
     try {
       const id = await createOrder({
         title: form.title.trim(),
+        article: form.article.trim() || undefined,
         expected_price: price,
         ozon_url: form.ozon_url.trim() || undefined,
         image_url: form.image_url || undefined,
         size: form.size.trim() || undefined,
         created_by: user.id,
       })
-      setForm({ title: '', expected_price: '', ozon_url: '', image_url: '', size: '' })
+      setForm({ title: '', article: '', expected_price: '', ozon_url: '', image_url: '', size: '' })
       setOpen(false)
       navigate(`/orders/${id}`)
     } catch (err) {
@@ -83,6 +85,17 @@ export default function AddOrderSheet() {
               value={form.title}
               onChange={e => set('title', e.target.value)}
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="a-article">Артикул</Label>
+            <Input
+              id="a-article"
+              placeholder="1234567890"
+              value={form.article}
+              onChange={e => set('article', e.target.value)}
+              inputMode="numeric"
             />
           </div>
 
