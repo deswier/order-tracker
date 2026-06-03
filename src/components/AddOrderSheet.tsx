@@ -82,7 +82,6 @@ export default function AddOrderSheet() {
               placeholder="Что купить?"
               value={form.title}
               onChange={e => set('title', e.target.value)}
-              autoFocus
               required
             />
           </div>

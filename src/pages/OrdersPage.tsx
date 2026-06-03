@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrders } from '@/contexts/OrdersContext'
 import { STATUS_LABELS } from '@/lib/statusMachine'
@@ -43,7 +43,7 @@ function applyFilters(
 
 export default function OrdersPage() {
   const navigate = useNavigate()
-  const { orders, loading } = useOrders()
+  const { orders, loading, refetch } = useOrders()
 
   // null = все статусы; по умолчанию — главные
   const [statusFilter, setStatusFilter] = useState<Set<OrderStatus> | null>(
@@ -52,6 +52,8 @@ export default function OrdersPage() {
   const [accountFilter, setAccountFilter] = useState<AccountFilter>('all')
   const [search, setSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
+
+  useEffect(() => { void refetch() }, [])
 
   const accounts = useMemo(() => {
     const set = new Set(orders.map(o => o.account).filter(Boolean) as string[])

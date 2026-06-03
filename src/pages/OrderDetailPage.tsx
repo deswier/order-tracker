@@ -281,7 +281,7 @@ export default function OrderDetailPage() {
       <div className={`flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 ${
         !editing && availableTransitions.length > 0
           ? 'pb-[calc(11rem+env(safe-area-inset-bottom))]'
-          : 'pb-[calc(2rem+env(safe-area-inset-bottom))]'
+          : 'pb-[calc(7rem+env(safe-area-inset-bottom))]'
       }`}>
         {/* Image — маленькая в просмотре, открывается по клику */}
         {order.image_url && !editing && (
