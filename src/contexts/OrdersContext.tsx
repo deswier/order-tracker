@@ -14,6 +14,7 @@ interface OrdersContextValue {
     image_url?: string
     account?: string
     delivery_date?: string
+    size?: string
     created_by: string
   }) => Promise<string>
   updateOrder: (id: string, updates: Partial<Order>) => Promise<void>
@@ -91,6 +92,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     image_url?: string
     account?: string
     delivery_date?: string
+    size?: string
     created_by: string
   }): Promise<string> {
     const { data: created, error } = await supabase.from('orders').insert([data]).select('id').single()

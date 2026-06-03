@@ -71,6 +71,7 @@ export default function OrderDetailPage() {
     account: '',
     delivery_date: '',
     return_number: '',
+    size: '',
   })
   const [formErrors, setFormErrors] = useState<Set<string>>(new Set())
 
@@ -88,6 +89,7 @@ export default function OrderDetailPage() {
       account: o.account ?? '',
       delivery_date: o.delivery_date ?? '',
       return_number: o.return_number ?? '',
+      size: o.size ?? '',
     }
   }
 
@@ -191,6 +193,7 @@ export default function OrderDetailPage() {
       account: form.account.trim() || null,
       delivery_date: form.delivery_date || null,
       return_number: form.return_number.trim() || null,
+      size: form.size.trim() || null,
     }
     if (!isOrdered) {
       updates.expected_price = parseFloat(form.expected_price) || order.expected_price
@@ -342,6 +345,7 @@ export default function OrderDetailPage() {
         {/* Данные заказа — просмотр */}
         {!editing && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
+            {order.size && <ViewRow label="Размер" value={order.size} />}
             {isOrdered ? (
               <>
                 <ViewRow label="Фактическая цена" value={order.actual_price != null ? formatPrice(order.actual_price) : null} />
@@ -384,6 +388,16 @@ export default function OrderDetailPage() {
                 value={form.title}
                 onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                 className={formErrors.has('title') ? 'border-red-400 focus-visible:ring-red-400' : ''}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="d-size-edit">Размер</Label>
+              <Input
+                id="d-size-edit"
+                placeholder="XL, 42, 10kg..."
+                value={form.size}
+                onChange={e => setForm(p => ({ ...p, size: e.target.value }))}
               />
             </div>
 
