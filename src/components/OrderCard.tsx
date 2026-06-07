@@ -2,7 +2,7 @@ import type { Order } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import ArticleChip from '@/components/ArticleChip'
 import { formatPrice } from '@/lib/utils'
-import { ExternalLink, CalendarDays, User, ArrowUp, ArrowDown, Ruler } from 'lucide-react'
+import { ExternalLink, CalendarDays, User, ArrowUp, ArrowDown, Ruler, Minus } from 'lucide-react'
 
 interface OrderCardProps {
   order: Order
@@ -11,7 +11,7 @@ interface OrderCardProps {
 
 function PriceDiff({ expected, actual }: { expected: number; actual: number }) {
   const diff = expected / 2 - actual
-  if (diff === 0) return null
+  if (diff === 0) return <Minus className="w-3 h-3 text-gray-400" />
   const cheaper = diff > 0
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${cheaper ? 'text-green-600' : 'text-yellow-500'}`}>

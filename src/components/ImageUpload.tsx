@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Camera, Image, X, Link } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Image, X } from 'lucide-react'
 
 interface ImageUploadProps {
   value: string
@@ -9,11 +8,8 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ value, onChange }: ImageUploadProps) {
-  const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
-  const [showUrlInput, setShowUrlInput] = useState(false)
-  const [urlValue, setUrlValue] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -34,7 +30,6 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       setError('Ошибка загрузки. Создайте бакет order-images в Supabase Storage.')
     } finally {
       setUploading(false)
-      if (cameraRef.current) cameraRef.current.value = ''
       if (galleryRef.current) galleryRef.current.value = ''
     }
   }
@@ -61,67 +56,18 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => cameraRef.current?.click()}
-          disabled={uploading}
-          className="h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 active:bg-gray-50 transition-colors disabled:opacity-50"
-        >
-          <Camera className="w-5 h-5" />
-          <span className="text-xs">{uploading ? 'Загружаем...' : 'Камера'}</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => galleryRef.current?.click()}
-          disabled={uploading}
-          className="h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 active:bg-gray-50 transition-colors disabled:opacity-50"
-        >
-          <Image className="w-5 h-5" />
-          <span className="text-xs">{uploading ? 'Загружаем...' : 'Галерея'}</span>
-        </button>
-      </div>
-
-      {!showUrlInput ? (
-        <button
-          type="button"
-          onClick={() => setShowUrlInput(true)}
-          className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 py-1"
-        >
-          <Link className="w-3 h-3" />
-          Вставить ссылку на фото
-        </button>
-      ) : (
-        <div className="flex gap-2">
-          <Input
-            type="url"
-            placeholder="https://..."
-            value={urlValue}
-            onChange={e => setUrlValue(e.target.value)}
-            className="text-sm h-10"
-          />
-          <button
-            type="button"
-            onClick={() => { onChange(urlValue); setShowUrlInput(false) }}
-            className="px-3 h-10 bg-blue-600 text-white rounded-lg text-sm font-medium shrink-0"
-          >
-            ОК
-          </button>
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={() => galleryRef.current?.click()}
+        disabled={uploading}
+        className="h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 active:bg-gray-50 transition-colors disabled:opacity-50"
+      >
+        <Image className="w-5 h-5" />
+        <span className="text-xs">{uploading ? 'Загружаем...' : 'Выбрать из галереи'}</span>
+      </button>
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
-      {/* Камера */}
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFile}
-      />
-      {/* Галерея — без capture, открывает файловый picker / фотогалерею */}
       <input
         ref={galleryRef}
         type="file"

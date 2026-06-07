@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice } from '@/lib/utils'
-import { ArrowLeft, ExternalLink, Pencil, Ruler, Trash2, X } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Minus, Pencil, Ruler, Trash2, X } from 'lucide-react'
 import AccountInput from '@/components/AccountInput'
 import ArticleChip from '@/components/ArticleChip'
 import type { Order, OrderStatus } from '@/types'
@@ -325,7 +325,7 @@ export default function OrderDetailPage() {
                 <div className="text-lg font-bold text-blue-600">{formatPrice(order.actual_price)}</div>
                 {(() => {
                   const diff = order.expected_price / 2 - order.actual_price
-                  if (diff === 0) return null
+                  if (diff === 0) return <Minus className="w-3.5 h-3.5 text-gray-400" />
                   const cheaper = diff > 0
                   return (
                     <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${cheaper ? 'text-green-600' : 'text-yellow-500'}`}>
@@ -376,14 +376,13 @@ export default function OrderDetailPage() {
                 </span>
               </div>
             )}
-            {isOrdered ? (
+            <ViewRow label="Ожидаемая цена" value={formatPrice(order.expected_price)} />
+            {isOrdered && (
               <>
                 <ViewRow label="Фактическая цена" value={order.actual_price != null ? formatPrice(order.actual_price) : null} />
                 <ViewRow label="Аккаунт" value={order.account} />
                 <ViewRow label="Дата доставки" value={order.delivery_date ? formatDate(order.delivery_date) : null} />
               </>
-            ) : (
-              <ViewRow label="Ожидаемая цена" value={formatPrice(order.expected_price)} />
             )}
             {showReturnNum && (
               <ViewRow label="Номер возврата" value={order.return_number} />
@@ -543,6 +542,9 @@ export default function OrderDetailPage() {
 
             <Button size="lg" onClick={handleSave} disabled={saving} className="mt-1">
               {saving ? 'Сохраняем...' : 'Сохранить изменения'}
+            </Button>
+            <Button size="lg" variant="destructive" onClick={cancelEdit} disabled={saving} className="opacity-80">
+              Отменить изменения
             </Button>
           </div>
         )}
