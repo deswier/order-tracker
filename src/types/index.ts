@@ -16,6 +16,7 @@ export interface Profile {
   id: string
   role: Role
   display_name: string | null
+  email: string | null
   created_at: string
 }
 

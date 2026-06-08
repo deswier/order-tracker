@@ -54,7 +54,7 @@ export default function OrderCard({ order, onClick }: OrderCardProps) {
               )}
             </div>
             <div className="flex-shrink-0">
-              <StatusBadge status={order.status} />
+              <StatusBadge status={order.status} deliveryDate={order.delivery_date} />
             </div>
           </div>
 

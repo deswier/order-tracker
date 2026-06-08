@@ -58,6 +58,7 @@ export default function OrderDetailPage() {
   const { user } = useAuth()
 
   const [order, setOrder] = useState<Order | null>(null)
+  const [creatorEmail, setCreatorEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -106,6 +107,13 @@ export default function OrderDetailPage() {
       setLoading(false)
     })
   }, [id])
+
+  useEffect(() => {
+    if (!order) return
+    supabase.from('profiles').select('email').eq('id', order.created_by).single().then(({ data }) => {
+      setCreatorEmail(data?.email ?? null)
+    })
+  }, [order?.created_by])
 
   async function applyUpdate(updates: Partial<Order>) {
     if (!order) return
@@ -318,7 +326,7 @@ export default function OrderDetailPage() {
 
         {/* Status + price */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
-          <StatusBadge status={order.status} />
+          <StatusBadge status={order.status} deliveryDate={order.delivery_date} />
           <div className="text-right flex flex-col items-end gap-0.5">
             {order.actual_price != null ? (
               <>
@@ -402,6 +410,7 @@ export default function OrderDetailPage() {
             ) : (
               <ViewRow label="Ссылка на Ozon" value={null} />
             )}
+            <ViewRow label="Создал" value={creatorEmail} />
           </div>
         )}
 
