@@ -7,6 +7,7 @@ import {
   TRANSITIONS,
   TRANSITION_LABELS,
   TRANSITION_VARIANTS,
+  STATUS_LABELS,
 } from '@/lib/statusMachine'
 import {
   Dialog,
@@ -21,10 +22,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice } from '@/lib/utils'
-import { ArrowLeft, ExternalLink, Minus, Pencil, Ruler, Trash2, X } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ExternalLink, Minus, Pencil, Ruler, Trash2, X } from 'lucide-react'
 import AccountInput from '@/components/AccountInput'
 import ArticleChip from '@/components/ArticleChip'
-import type { Order, OrderStatus } from '@/types'
+import type { Order, OrderHistoryEntry, OrderStatus } from '@/types'
 
 type TField = 'actual_price' | 'account' | 'delivery_date' | 'return_number'
 
@@ -40,6 +41,85 @@ const TRANSITION_DIALOG_TITLES: Partial<Record<string, string>> = {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function formatDateTime(dateStr: string) {
+  return new Date(dateStr).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+}
+
+const HISTORY_FIELD_LABELS: Record<string, string> = {
+  title: 'Название',
+  article: 'Артикул',
+  size: 'Размер',
+  expected_price: 'Ожидаемая цена',
+  actual_price: 'Фактическая цена',
+  status: 'Статус',
+  account: 'Аккаунт',
+  delivery_date: 'Дата доставки',
+  return_number: 'Номер возврата',
+  is_settled: 'Оплачено дочерью',
+  image_url: 'Фото',
+  ozon_url: 'Ссылка на Ozon',
+}
+
+function formatHistoryValue(field: string, value: string | null) {
+  if (value == null || value === '') return '—'
+  switch (field) {
+    case 'expected_price':
+    case 'actual_price':
+      return formatPrice(parseFloat(value))
+    case 'status':
+      return STATUS_LABELS[value as OrderStatus] ?? value
+    case 'delivery_date':
+      return formatDate(value)
+    case 'is_settled':
+      return value === 'true' ? 'Да' : 'Нет'
+    case 'image_url':
+      return 'указано'
+    case 'ozon_url':
+      return 'указана'
+    default:
+      return value
+  }
+}
+
+interface HistoryGroup {
+  changed_at: string
+  changed_by: string
+  entries: OrderHistoryEntry[]
+}
+
+function groupHistory(entries: OrderHistoryEntry[]): HistoryGroup[] {
+  const groups: HistoryGroup[] = []
+  for (const entry of entries) {
+    const last = groups[groups.length - 1]
+    if (last && last.changed_at === entry.changed_at && last.changed_by === entry.changed_by) {
+      last.entries.push(entry)
+    } else {
+      groups.push({ changed_at: entry.changed_at, changed_by: entry.changed_by, entries: [entry] })
+    }
+  }
+  return groups
+}
+
+function HistoryGroupRow({ group, authorName }: { group: HistoryGroup; authorName: string | null }) {
+  return (
+    <div className="py-2 border-b border-gray-50 last:border-0">
+      <div className="text-xs text-gray-400 mb-1 truncate">
+        {formatDateTime(group.changed_at)} · {authorName ?? '—'}
+      </div>
+      <div className="flex flex-col gap-0.5">
+        {group.entries.map(entry => (
+          <div key={entry.id} className="text-sm truncate">
+            <span className="font-medium text-gray-900">{HISTORY_FIELD_LABELS[entry.field_name] ?? entry.field_name}:</span>{' '}
+            <span className="text-gray-500">
+              {formatHistoryValue(entry.field_name, entry.old_value)} → {formatHistoryValue(entry.field_name, entry.new_value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function ViewRow({ label, value }: { label: string; value?: string | null }) {
@@ -58,7 +138,10 @@ export default function OrderDetailPage() {
   const { user } = useAuth()
 
   const [order, setOrder] = useState<Order | null>(null)
-  const [creatorEmail, setCreatorEmail] = useState<string | null>(null)
+  const [creatorName, setCreatorName] = useState<string | null>(null)
+  const [history, setHistory] = useState<OrderHistoryEntry[]>([])
+  const [historyAuthors, setHistoryAuthors] = useState<Record<string, string | null>>({})
+  const [showHistory, setShowHistory] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -97,12 +180,30 @@ export default function OrderDetailPage() {
     }
   }
 
+  async function loadHistory(orderId: string) {
+    const { data } = await supabase
+      .from('order_history')
+      .select('*')
+      .eq('order_id', orderId)
+      .order('changed_at', { ascending: false })
+    const entries = data ?? []
+    setHistory(entries)
+
+    const authorIds = [...new Set(entries.map(e => e.changed_by))]
+    if (authorIds.length === 0) { setHistoryAuthors({}); return }
+    const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', authorIds)
+    const map: Record<string, string | null> = {}
+    for (const p of profiles ?? []) map[p.id] = p.display_name
+    setHistoryAuthors(map)
+  }
+
   useEffect(() => {
     if (!id) return
     supabase.from('orders').select('*').eq('id', id).single().then(({ data }) => {
       if (data) {
         setOrder(data)
         setForm(formFromOrder(data))
+        void loadHistory(data.id)
       }
       setLoading(false)
     })
@@ -110,8 +211,8 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     if (!order) return
-    supabase.from('profiles').select('email').eq('id', order.created_by).single().then(({ data }) => {
-      setCreatorEmail(data?.email ?? null)
+    supabase.from('profiles').select('display_name').eq('id', order.created_by).single().then(({ data }) => {
+      setCreatorName(data?.display_name ?? null)
     })
   }, [order?.created_by])
 
@@ -121,6 +222,7 @@ export default function OrderDetailPage() {
     try {
       await updateOrder(order.id, updates)
       setOrder(prev => prev ? { ...prev, ...updates } : prev)
+      void loadHistory(order.id)
     } finally {
       setSaving(false)
     }
@@ -410,9 +512,39 @@ export default function OrderDetailPage() {
             ) : (
               <ViewRow label="Ссылка на Ozon" value={null} />
             )}
-            <ViewRow label="Создал" value={creatorEmail} />
+            <ViewRow label="Создал" value={creatorName} />
           </div>
         )}
+
+        {/* История изменений */}
+        {!editing && history.length > 0 && (() => {
+          const groups = groupHistory(history)
+          return (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-1">
+              <button
+                onClick={() => setShowHistory(v => !v)}
+                className="w-full flex items-center justify-between py-2.5"
+              >
+                <span className="font-semibold text-gray-900">История изменений</span>
+                <span className="flex items-center gap-1.5 text-sm text-gray-400">
+                  {groups.length}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showHistory ? 'rotate-180' : ''}`} />
+                </span>
+              </button>
+              {showHistory && (
+                <div className="pb-1">
+                  {groups.map(group => (
+                    <HistoryGroupRow
+                      key={`${group.changed_at}_${group.changed_by}`}
+                      group={group}
+                      authorName={historyAuthors[group.changed_by] ?? null}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Данные заказа — редактирование */}
         {editing && (

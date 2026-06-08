@@ -20,6 +20,16 @@ export interface Profile {
   created_at: string
 }
 
+export interface OrderHistoryEntry {
+  id: string
+  order_id: string
+  field_name: string
+  old_value: string | null
+  new_value: string | null
+  changed_by: string
+  changed_at: string
+}
+
 export interface Order {
   id: string
   title: string
