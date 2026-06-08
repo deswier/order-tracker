@@ -131,6 +131,7 @@ export function useOrders() {
 export function computeBalance(orders: Order[]) {
   const SPENT = ['RECEIVED', 'STALE', 'RETURN_NEEDED', 'RETURN_PENDING', 'RETURNED']
   const RETURNED = ['RETURNED']
+  const PENDING = ['ORDERED', 'AWAITING_RECEIPT']
 
   const purchased = orders
     .filter(o => SPENT.includes(o.status))
@@ -144,5 +145,10 @@ export function computeBalance(orders: Order[]) {
     .filter(o => o.is_settled)
     .reduce((sum, o) => sum + (o.actual_price ?? 0), 0)
 
-  return { purchased, returned, settled, balance: purchased - returned - settled }
+  // Заказано / ожидает получения — ещё не входит в баланс, но даёт прикинуть будущий долг
+  const pending = orders
+    .filter(o => PENDING.includes(o.status))
+    .reduce((sum, o) => sum + (o.actual_price ?? 0), 0)
+
+  return { purchased, returned, settled, pending, balance: purchased - returned - settled }
 }

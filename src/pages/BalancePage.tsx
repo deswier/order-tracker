@@ -61,7 +61,7 @@ const TX_CONFIG: Record<TxType, { label: string; sign: string; color: string; bg
 export default function BalancePage() {
   const navigate = useNavigate()
   const { orders, loading, refetch } = useOrders()
-  const { purchased, returned, settled, balance } = computeBalance(orders)
+  const { purchased, returned, settled, pending, balance } = computeBalance(orders)
 
   useEffect(() => { void refetch() }, [])
   const history = useMemo(() => buildHistory(orders), [orders])
@@ -104,6 +104,17 @@ export default function BalancePage() {
               {isNegative && '💸 Мама должна дочери'}
             </div>
           </div>
+
+          {/* Предполагаемый долг (заказано + ожидает получения) */}
+          {pending > 0 && (
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-gray-600">Предполагаемо в пути</div>
+                <div className="text-xs text-gray-400 mt-0.5">Заказано + ожидает получения · не входит в баланс</div>
+              </div>
+              <div className="text-lg font-semibold text-gray-500 shrink-0">{formatPrice(pending)}</div>
+            </div>
+          )}
 
           {/* Детализация */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
